@@ -1,0 +1,10 @@
+POST http://localhost:8080/api/v1/orders
+
+Content-Type: application/json
+
+{
+    "customerId": "Client-feusap-001",
+    "productName": "Pack TCF Gold",
+    "quantity": 1,
+    "totalAmount": 35000.0
+}
