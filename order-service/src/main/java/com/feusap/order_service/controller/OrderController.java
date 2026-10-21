@@ -5,7 +5,6 @@ import com.feusap.order_service.dto.OrderEvent;
 import com.feusap.order_service.producer.OrderProducer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -26,26 +25,20 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/orders")
-public class orderController {
+public class OrderController {
     private final OrderProducer orderProducer;
-    @Operation(summary = "Create Order Event", description = "create an OrderEvent")
+    @Operation(summary = "Create an order", description = "Validates the request and publishes an OrderEvent to Kafka")
     @ApiResponses(
             value = {
                     @ApiResponse(
-                            responseCode = "200",
-                            description = "Event created",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = OrderEvent.class)
-                            )
+                            responseCode = "202",
+                            description = "Order accepted and event published",
+                            content = @Content(mediaType = "application/json")
                     ),
                     @ApiResponse(
-                            responseCode = "404",
-                            description = "Not found",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = OrderEvent.class)
-                            )
+                            responseCode = "400",
+                            description = "Invalid request body",
+                            content = @Content(mediaType = "application/json")
                     ),
             }
     )
@@ -57,6 +50,7 @@ public class orderController {
         var event = OrderEvent.of(
                 orderId,
                 request.customerId(),
+                request.customerEmail(),
                 request.productName(),
                 request.quantity(),
                 request.totalAmount()

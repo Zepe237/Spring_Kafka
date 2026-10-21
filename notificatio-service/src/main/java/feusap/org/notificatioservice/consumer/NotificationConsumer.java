@@ -1,5 +1,7 @@
 package feusap.org.notificatioservice.consumer;
 import feusap.org.notificatioservice.dto.OrderEvent;
+import feusap.org.notificatioservice.mail.OrderEmailService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -9,7 +11,10 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationConsumer {
+
+    private final OrderEmailService orderEmailService;
 
     @KafkaListener(
             topics = "${kafka.topic.orders}",
@@ -29,17 +34,18 @@ public class NotificationConsumer {
                 Offset: {}
                 Key: {}
                 OrderId: {}
-                Customer: {}
+                Customer: {} <{}>
                 Product: {}
                 Amount: {}
                 Status: {}
-                """, consumerRecord.topic(), partition, offset, consumerRecord.key(), event.orderId(), event.customerId(), event.productName(), event.totalAmount(), event.status());
+                """, consumerRecord.topic(), partition, offset, consumerRecord.key(), event.orderId(), event.customerId(), event.customerEmail(), event.productName(), event.totalAmount(), event.status());
         processOrderEvent(event);
 
     }
 
     private void processOrderEvent(OrderEvent event) {
         log.info("Processing order event for order ID: {}", event.orderId());
+        orderEmailService.sendOrderConfirmation(event);
     }
 
 }
